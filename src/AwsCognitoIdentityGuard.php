@@ -2,6 +2,7 @@
 
 namespace Pallant\LaravelAwsCognitoAuth;
 
+use Pallant\LaravelAwsCognitoAuth\AwsSecretHash;
 use Aws\CognitoIdentityProvider\CognitoIdentityProviderClient;
 use Aws\CognitoIdentityProvider\Exception\CognitoIdentityProviderException;
 use Carbon\Carbon;
@@ -25,6 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 class AwsCognitoIdentityGuard implements StatefulGuard
 {
     use GuardHelpers;
+    use AwsSecretHash;
 
     /**
      * The name of the Guard. Typically "session".
@@ -558,10 +560,7 @@ class AwsCognitoIdentityGuard implements StatefulGuard
 
             $response = $this->client->adminInitiateAuth([
                 'AuthFlow' => 'ADMIN_NO_SRP_AUTH',
-                'AuthParameters' => [
-                    'USERNAME' => $username,
-                    'PASSWORD' => $password,
-                ],
+                'AuthParameters' => $this->getAuthParameters(),
                 'ClientId' => $this->getDefaultAppConfig()['client-id'],
                 'UserPoolId' => $this->config['pool-id'],
             ]);
@@ -571,6 +570,27 @@ class AwsCognitoIdentityGuard implements StatefulGuard
         } catch (CognitoIdentityProviderException $e) {
             return new AuthAttempt(false, ['exception' => $e]);
         }
+    }
+
+    /**
+     * Add secret hash to parameter if client secret key is found
+     *
+     * @param string $username
+     * @param string $password
+     * @return array
+     */
+    protected function getAuthParameters($username, $password)
+    {
+        $params =  [
+            'USERNAME' => $username,
+            'PASSWORD' => $password,
+        ];
+
+        if (isset($this->getDefaultAppConfig()['client-secret'])) {
+            $params['SECRET_HASH'] = $this->secretHash($username);
+        }
+
+        return $params;
     }
 
     /**
