@@ -560,7 +560,7 @@ class AwsCognitoIdentityGuard implements StatefulGuard
 
             $response = $this->client->adminInitiateAuth([
                 'AuthFlow' => 'ADMIN_NO_SRP_AUTH',
-                'AuthParameters' => $this->getAuthParameters(),
+                'AuthParameters' => $this->getAuthParameters($username, $password),
                 'ClientId' => $this->getDefaultAppConfig()['client-id'],
                 'UserPoolId' => $this->config['pool-id'],
             ]);
