@@ -66,6 +66,8 @@ return [
 
         'default' => [
             'client-id' => env('AWS_COGNITO_IDENTITY_APP_CLIENT_ID', ''),
+            // Add your client secret key here if you have one
+            // 'client-secret' => env('AWS_COGNITO_IDENTITY_APP_CLIENT_SECRET', ''),
             'refresh-token-expiration' => 30,
         ],
 
